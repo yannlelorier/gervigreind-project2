@@ -2,6 +2,11 @@ import numpy as np
 import pylab as pl
 from pykalman import KalmanFilter
 
+from traffic.data.samples import quickstart
+
+flight = quickstart["AFR27GH"].data
+flight = flight[['timestamp', 'latitude', 'longitude']]
+
 # specify parameters
 random_state = np.random.RandomState(0)
 #interval for measurements
@@ -43,17 +48,29 @@ states, observations = kf.sample(
     initial_state=initial_state_mean
 )
 
+state_means  = kf.filter(flight[['latitude', 'longitude']].values)[0]
+# state_means    = meas.flatten()
+
 # estimate state with filtering and smoothing
-filtered_state_estimates = kf.filter(observations)[0]
-smoothed_state_estimates = kf.smooth(observations)[0]
+# filtered_state_estimates = kf.filter(meas)[0]
+# smoothed_state_estimates = kf.smooth(meas)[0]
 
 # draw estimates
+# pl.figure()
+# lines_true = pl.plot(states, color='b')
+# lines_filt = pl.plot(meas, color='r')
+# lines_smooth = pl.plot(smoothed_state_estimates, color='g')
+# pl.legend((lines_true[0], lines_filt[0], lines_smooth[0]),
+#           ('true', 'filt', 'smooth'),
+#           loc='lower right'
+# )
+
+res = [[ i for i, j in state_means ], 
+       [ j for i, j in state_means ]]
+# print(res) 
+
 pl.figure()
-lines_true = pl.plot(states, color='b')
-lines_filt = pl.plot(filtered_state_estimates, color='r')
-lines_smooth = pl.plot(smoothed_state_estimates, color='g')
-pl.legend((lines_true[0], lines_filt[0], lines_smooth[0]),
-          ('true', 'filt', 'smooth'),
-          loc='lower right'
-)
+lines_true = pl.scatter(x = flight[['longitude']].values, y= flight[['latitude']].values, color='b')
+lines_filt = pl.scatter(x = res[0], y = res[1], color='r')
+
 pl.show()
