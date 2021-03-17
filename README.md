@@ -172,13 +172,13 @@ According to the documentation of [Traffic core structure](https://traffic-viz.g
 
 The script for this can be found [here](./KalmanF/test_plots.py)
 
-and can be run with the IPython Environment:
+and can be run with the `IPython` Environment:
 
 ```sh
 python -m IPython
 ```
 
-Once inside the environment, in the `KalmanF` directory:
+Once inside the `IPython` environment, in the `KalmanF` directory:
 
 ```python
 run test_plots.py
@@ -187,6 +187,14 @@ run test_plots.py
 
 
 ![Plot example](./fig/Plots.png)
+
+### Task 3 - Simulated Radar Measurements (Missing provided code)
+
+### Task 4 - Implementation of Kalman Filter Model
+
+
+
+
 
 ### Setting up the environment (Linux/MacOS)
 
