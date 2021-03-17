@@ -8,9 +8,13 @@ Wojciech Woźniak
 
 Yann Le Lorier
 
+[TOC]
+
+
+
 ## Tasks
 
-### 1. Definition of the Model
+### Task 1 - Definition of the Model
 
 #### The state vector $\boldsymbol{x_k}$ 
 
@@ -147,3 +151,59 @@ Reference: [State Update (Kalman Filter tutorial)](https://www.kalmanfilter.net/
 
 #### Covariance matrix $R$ (MISSING)
 
+### Task 2 - Understanding the `traffic` data structure
+
+According to the documentation of [Traffic core structure](https://traffic-viz.github.io/core_structure.html), the `traffic` library has three core classes:
+
+- traffic.core.Flight built on top of Pandas Dataframe with attributes:
+  - icao24
+  - callsign
+  - timestamp
+  - latitude
+  - altitude
+- traffic.core.Traffic It's the class that represents a collection of multiple flights, flattened into a single pandas dataframe
+- traffic.core.Airspace with properties:
+  - area: area of the shape in square meters
+  - bounds: returns the bounding box of the shape (west, south, east, north)
+  - centroid: returns the centroid of the shape with a `shapely` point
+  - extent: returns the extent of the bounding box of the shape (west, east, south, north)
+
+**Plotting some examples from The Quickstart** 
+
+The script for this can be found [here](./KalmanF/test_plots.py)
+
+and can be run with the IPython Environment:
+
+```sh
+python -m IPython
+```
+
+Once inside the environment, in the `KalmanF` directory:
+
+```python
+run test_plots.py
+```
+
+
+
+![Plot example](./fig/Plots.png)
+
+### Setting up the environment (Linux/MacOS)
+
+`conda create --prefix kalman-env cartopy shapely python=3.7`
+
+`conda activate ./kalman-env`
+
+**Install traffic**
+
+Has to be made via pip
+
+`pip install traffic`
+
+**Install geopy **
+
+`pip install geopy`
+
+**Install Kalman**
+
+`pip install pykalman`
