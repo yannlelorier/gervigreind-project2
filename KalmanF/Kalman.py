@@ -13,28 +13,30 @@ random_state = np.random.RandomState(0)
 delta_t = 10
 
 #Transition matrix F
-transition_matrix = [[1, delta_t],
-                     [0, 1]]
-# transition_matrix = [[1, 0, delta_t, 0],
-#                      [0, 1, 0, delta_t],
-#                      [0, 0, 1, 0],
-#                      [0, 0, 0, 1]]
-transition_offset = [-0.1, 0.1] #TODO what is this
+# transition_matrix = [[1, delta_t],
+#                      [0, 1]]
+transition_matrix = [[1, 0, delta_t, 0],
+                     [0, 1, 0, delta_t],
+                     [0, 0, 1, 0],
+                     [0, 0, 0, 1]]
+# transition_offset = [-0.1, 0.1] #TODO what is this
+transition_offset = np.zeros((4,1))
 
-observation_matrix = np.eye(2)# + random_state.randn(2, 2) * 0.1
+# observation_matrix = np.eye(2)# + random_state.randn(2, 2) * 0.1
 # Observation matrix H
-# observation_matrix = [[1, 0, 0, 0],
-#                       [0, 1, 0, 0]]
-observation_offset = [1.0, -1.0] #TODO what is this
+observation_matrix = [[1, 0, 0, 0],
+                      [0, 1, 0, 0]]
+# observation_offset = [1.0, -1.0] #TODO what is this
+observation_offset = np.zeros((4,1))
 
-transition_covariance = np.eye(2)
-# transition_covariance = np.eye(4)
-observation_covariance = np.eye(2) + random_state.randn(2, 2) * 0.1
-# observation_covariance = np.eye(4) #+ random_state.randn(4, 4) * 0.1
-initial_state_mean = [5, -5]
-# initial_state_mean = [[5, -5],
-#                       [-5, 5]]
-initial_state_covariance = [[1, 0.1], [-0.1, 1]]
+# transition_covariance = np.eye(2)
+transition_covariance = np.eye(4)
+# observation_covariance = np.eye(2) + random_state.randn(2, 2) * 0.1
+observation_covariance = np.eye(4) #+ random_state.randn(4, 4) * 0.1
+# initial_state_mean = [5, -5]
+initial_state_mean = [flight[['longitude', 'latitude']].values[0],0,0]
+# initial_state_covariance = [[1, 0.1], [-0.1, 1]]
+initial_state_covariance = np.eye(4)
 
 # sample from model
 kf = KalmanFilter(
