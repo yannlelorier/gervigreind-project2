@@ -18,7 +18,7 @@ Yann Le Lorier
 
 #### The state vector $\boldsymbol{x_k}$ 
 
-$\boldsymbol{x_k}$ can be defined as a vector that has as entries $\hat{x}$, $\hat{y}$ the coordinates for the airplane, and $\dot{x}$, $\dot{y}$, the velocity:
+$\boldsymbol{x_k}$ can be defined as a vector that has as entries $\hat{x}$, $\hat{y}$ the coordinates for the airplane, and $\dot{x}$, $\dot{y}$, the velocity components:
 $$
 \boldsymbol{\hat{x}_k} = \begin{bmatrix}
 \hat{x}\\
@@ -55,28 +55,28 @@ $$
 
 Reference: [Covariance (Kalman FIlter Tutorial)](https://www.kalmanfilter.net/covextrap.html)
 
-The covariance matrix $Q$ can be drawn from the definition: 
+The covariance matrix $Q$ can be drawn from the discrete noise model:
 
-/////ask: how to define matrix Q_a?
+
 $$
 \begin{align}
-Q&=FQ_aF^T\\
-&=
+Q &= 
 \begin{pmatrix}
-1 & 0 & \Delta t & 0\\
-0 & 1 & 0 & \Delta t\\
-0 & 0 & 1 & 0\\
-0 & 0 & 0 & 1
-\end{pmatrix}
-Q_a %%missing here the value
+V(x) & 0 & COV(x,\dot{x}) & 0\\
+0 & V(y) & 0 & COV(y, \dot{y})\\
+COV(\dot{x},x) & 0 & V(\dot{x}) & 0\\
+0 & COV(\dot{y},y) & 0 & V(\dot{y})
+\end{pmatrix}\\
+&= \sigma_a^2
 \begin{pmatrix}
-1 & 0 & 0 & 0\\
-0 & 1 & 0 & 0\\
-\Delta t & 0 & 1 & 0\\
-0 & \Delta t & 0 & 1
+\frac{\Delta t^4}{4} & 0 & \frac{\Delta t^3}{2} & 0\\
+0 & \frac{\Delta t^4}{4} & 0 & \frac{\Delta t^3}{2}\\
+\frac{\Delta t^3}{2} & 0 & \Delta t^2 & 0\\
+0 & \frac{\Delta t^3}{2} & 0 & \Delta t^2
 \end{pmatrix}
 \end{align}
 $$
+
 
 Where $\Delta t = 10s$
 
@@ -149,7 +149,16 @@ $$
 
 Reference: [State Update (Kalman Filter tutorial)](https://www.kalmanfilter.net/stateUpdate.html)
 
-#### Covariance matrix $R$ (MISSING)
+#### Covariance matrix $R$
+
+The covariance matrix $R$ can be defined as a $2\times 2$ diagonal matrix:
+$$
+R = 
+\begin{pmatrix}
+1 & 0\\
+0 & 1
+\end{pmatrix}
+$$
 
 ### Task 2 - Understanding the `traffic` data structure
 
