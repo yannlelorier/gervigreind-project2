@@ -114,12 +114,22 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
                       [0, 1, 0, 0]]
         
         #TODO check if this is correct
+        #My Version
         trans_cov = [
                     [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
                     [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
                     [0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2), 0],
                     [0, 0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2)]
                     ]
+
+        #Paul's Version
+        
+        # trans_cov = [
+        #             [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
+        #             [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
+        #             [0, 0, (delta_t**2)*(sigma_p**2), 0],
+        #             [0, 0, 0, (delta_t**2)*(sigma_p**2)]
+        #             ]
 
         #TODO why does this work better?
         # trans_cov = np.eye(4)
