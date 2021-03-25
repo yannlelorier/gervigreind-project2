@@ -152,12 +152,8 @@ if __name__ == "__main__":
  
     mse_filt = ((radar_data[0].data[['latitude_after']].values - radar_data[0].data[['latitude_true']].values)**2 + (radar_data[0].data[['longitude_after']].values - radar_data[0].data[['longitude_true']].values)**2).mean()
  
-    print("--------------------")
- 
     mse_noise = ((radar_data[0].data[['latitude']].values - radar_data[0].data[['latitude_true']].values)**2 + (radar_data[0].data[['longitude']].values - radar_data[0].data[['longitude_true']].values)**2).mean()
  
-    
-    
     data = [radar_data[0].data[['latitude_true']], radar_data[0].data[['longitude_true']], radar_data[0].data[['latitude']], radar_data[0].data[['longitude']], filtered_flight.data[['latitude_after']], filtered_flight.data[['longitude_after']]]
  
     position_df = pd.concat(data, axis=1)
@@ -184,4 +180,5 @@ if __name__ == "__main__":
  
  
     print('----------------------------------------')
+    print("MSE:")
     print((mse_noise-mse_filt)/mse_noise)
