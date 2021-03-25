@@ -20,6 +20,7 @@ projection_for_flight = {}
 def get_radar_data():
     rng = default_rng()
     radar_error = 0.1 # in kilometers
+    radar_altitude_error = 330 # in feet ( ~ 100 meters)
     gt = get_ground_truth_data()
     radar_data = []
     for flight in gt:
@@ -28,10 +29,14 @@ def get_radar_data():
         for i in range(len(flight_radar.data)):
             point = geodesic(kilometers=rng.normal()*radar_error).destination((flight_radar.data.at[i,"latitude"], flight_radar.data.at[i,"longitude"]), rng.random()*360)
             (flight_radar.data.at[i,"latitude"], flight_radar.data.at[i,"longitude"]) = (point.latitude, point.longitude)
+            flight_radar.data.at[i,"altitude"] += rng.normal()*radar_altitude_error
             # print("after: %f, %f" % (flight_radar.data.at[i,"latitude"], flight_radar.data.at[i,"longitude"]))
         projection = pyproj.Proj(proj="lcc", ellps="WGS84", lat_1=flight_radar.data.latitude.min(), lat_2=flight_radar.data.latitude.max(), lat_0=flight_radar.data.latitude.mean(), lon_0=flight_radar.data.longitude.mean())
         flight_radar = flight_radar.compute_xy(projection)
-        projection_for_flight[flight_radar.callsign]=projection
+        flightid = flight_radar.callsign + str(flight_radar.start)
+        if flightid in projection_for_flight:
+            print("ERROR: duplicate flight ids: %s" % (flightid))
+        projection_for_flight[flight_radar.callsign + str(flight_radar.start)]=projection
         radar_data.append(flight_radar)
     return radar_data
 
@@ -42,12 +47,13 @@ def get_radar_data():
 #  3. call set_lat_lon_from_x_y() on that flight to set its latitude and longitude columns according to the filitered x,y positions
 # Step 3 is necessary, if you want to plot the data, because plotting is based on the lat/lon coordinates.
 def set_lat_lon_from_x_y(flight):
-    projection = projection_for_flight[flight.callsign]
+    flightid = flight.callsign + str(flight.start)
+    projection = projection_for_flight[flightid]
     if projection is None:
-        print("No projection found for flight %s. You probably did not get this flight from get_radar_data()." % (str(flight.flight_id)))
+        print("No projection found for flight %s. You probably did not get this flight from get_radar_data()." % (flightid))
     
     lons, lats = projection(flight.data["x"], flight.data["y"], inverse=True)
     flight.data["longitude"] = lons
-    flight.data["latitute"] = lats
+    flight.data["latitude"] = lats
     return flight
 
