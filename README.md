@@ -51,7 +51,7 @@ B_ku_k= 0
 $$
 
 
-#### Covariance Matrix $Q$ (MISSING)
+#### Covariance Matrix $Q$ (check)
 
 Reference: [Covariance (Kalman FIlter Tutorial)](https://www.kalmanfilter.net/covextrap.html)
 
