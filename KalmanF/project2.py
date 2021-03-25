@@ -63,6 +63,7 @@ def get_radar_data():
 #  3. call set_lat_lon_from_x_y() on that flight to set its latitude and longitude columns according to the filitered x,y positions
 # Step 3 is necessary, if you want to plot the data, because plotting is based on the lat/lon coordinates.
 def set_lat_lon_from_x_y(flight):
+    #TODO which one should we use?
     new_flight = copy.copy(flight)
     # new_flight = flight
     print(new_flight is flight)
@@ -110,13 +111,17 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
  
         # Observation matrix H
         obs_matrix = [[1, 0, 0, 0],
-                              [0, 1, 0, 0]]
+                      [0, 1, 0, 0]]
+        
+        #TODO check if this is correct
         trans_cov = [
                     [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
                     [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
                     [0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2), 0],
                     [0, 0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2)]
                     ]
+
+        #TODO why does this work better?
         # trans_cov = np.eye(4)
         
         obs_cov = np.eye(2)*sigma_o**2
@@ -127,9 +132,10 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         init_st_cov = np.eye(4)*sigma_o**2
  
         return (trans_matrix, obs_matrix, trans_cov, obs_cov, init_st_mean, init_st_cov)
-    else: return None #TODO 3 dimensions 
+    else: return None #TODO bonus 3 dimensions 
 
 if __name__ == "__main__":
+    #TODO change to use all of the flights
     radar_data = get_radar_data()
  
     config = init_kalman(radar_data[0].data)
@@ -158,8 +164,6 @@ if __name__ == "__main__":
  
     position_df['distance_filtered_true'] = np.nan
     position_df['distance_noise_true'] = np.nan
-    #for ind in df.index:
-    #print(df['Name'][ind], df['Stream'][ind])
  
     for i in position_df.index:
         position_df['distance_filtered_true'][i] = distance.distance((position_df['latitude_true'][i],position_df['longitude_true'][i]),(position_df['latitude'][i],position_df['longitude'][i])).m
@@ -181,5 +185,3 @@ if __name__ == "__main__":
  
     print('----------------------------------------')
     print((mse_noise-mse_filt)/mse_noise)
-    # for measurement in radar_data:
-    #     set_lat_lon_from_x_y(measurement)
