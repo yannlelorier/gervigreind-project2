@@ -197,13 +197,31 @@ run test_plots.py
 
 ![Plot example](./fig/Plots.png)
 
-### Task 3 - Simulated Radar Measurements (Missing provided code)
+### Task 3 - Simulated Radar Measurements
 
-### Task 4 - Implementation of Kalman Filter Model
+### Task 4,5,6 - Implementation of Kalman Filter Model
 
+see code [here](./KarlmanF/project2.py)
 
+### Task 7 - Errors
 
+According to the following tests:
 
+TODO tests here
+
+We can see that the flights where the model performs worse are the flights where there are many turns, and the Kalman filter lags behind the actual trajectory of the plane.
+
+Another case where this model lacks is when the flight is so long that the curvature of the Earth starts to interfere with the $x$ and $y$ coordinates.
+
+### Task 8 - Process noises ($\sigma_p, \sigma_o$)
+
+We conducted the following experiments:
+
+TODO experiments here
+
+### Task 9 - Smoothing
+
+### Task 10 - Bonus (3D)
 
 ### Setting up the environment (Linux/MacOS)
 
@@ -224,3 +242,14 @@ Has to be made via pip
 **Install Kalman**
 
 `pip install pykalman`
+
+**Running the code**
+
+We ran all of the tests and the code on the IPython environment (run the following command to avoid using the global python environment):
+
+`python -m IPython`
+
+and once inside the IPython environment:
+
+`run project2.py`
+
