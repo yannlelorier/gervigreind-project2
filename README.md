@@ -205,13 +205,87 @@ see code [here](./KarlmanF/project2.py)
 
 ### Task 7 - Errors
 
-According to the following tests:
+We initialized a set of variables that allowed us to see just how much we were improving:
 
-TODO tests here
+```python
+tot_maxi_mean_noised = 0
+tot_mean_mean_noised = 0
 
-We can see that the flights where the model performs worse are the flights where there are many turns, and the Kalman filter lags behind the actual trajectory of the plane.
+tot_maxi_mean_filtered = 0
+tot_mean_mean_filtered = 0
+```
+
+These variables are the means of the noisy flight measurements and the means of the Kalman Filter calculations:
+
+- For the maximum distance mean
+- For the mean of the mean of each flight
+
+According to the following tests with all 57 flights:
+
+```sh
+Results:
+
+--------
+Unfiltered
+        > Maximum distance mean = 346.44509037907585
+        > Mean Distance Mean = 80.04527248347601
+--------
+Filtered
+        > Maximum distance mean = 340.1719749305857
+        > Mean distance mean = 79.88746612511179
+```
+
+this corresponds to a 1.81% improvement in performance for the Maximum distance mean
+
+And a 0.19% improvement in performance for the Mean Distance mean
+
+***
+
+When running standalone tests we realized that:
+
+We can see that the flights where the model performs worse are the flights where there almost no turns, and the Kalman filter lags behind the actual trajectory of the plane, in contrast to flights with lots of turns where the Kalman filter shines.
 
 Another case where this model lacks is when the flight is so long that the curvature of the Earth starts to interfere with the $x$ and $y$ coordinates.
+
+Examples:
+
+**Texas**
+
+![Texas flight](./fig/texas.png)
+
+```
+######################### FLIGHT texas ################
+----------------------------------------------------
+Unfiltered:
+        > Maxi Noised-true distance = 377.3392193526951 metres 
+        > Noised-true distance mean = 82.63181743435727 metres
+----------------------------------------------------
+Filtered
+        > Maxi Filtered-true distance = 344.78274611002666 metres
+        > Filtered-true distance mean = 80.86731657576442 metres
+----------------------------------------------------
+        > MSE for noised and filtered data = 0.597703142720048
+```
+
+**Mecsek_Mountains**
+
+![mecsek](./fig/mecsek.png)
+
+```
+######################### FLIGHT mecsek_mountains ################
+----------------------------------------------------
+Unfiltered:
+        > Maxi Noised-true distance = 361.2705218059704 metres 
+        > Noised-true distance mean = 79.9102395910746 metres
+----------------------------------------------------
+Filtered
+        > Maxi Filtered-true distance = 317.6362849719422 metres
+        > Filtered-true distance mean = 79.47930703683392 metres
+----------------------------------------------------
+        > MSE for noised and filtered data = 0.6292834555289681
+```
+
+
 
 ### Task 8 - Process noises ($\sigma_p, \sigma_o$)
 
