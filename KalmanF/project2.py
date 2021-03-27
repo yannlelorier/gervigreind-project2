@@ -8,10 +8,11 @@ import numpy as np
 import pandas as pd
 import pyproj
 import copy
+
 # returns a list of flights with the original GPS data
-def get_ground_truth_data():
+def get_ground_truth_data(names):
     #names=['liguria', 'pixair_toulouse', 'indiana', 'texas', 'georeal_fyn_island', 'ign_mercantour', 'ign_fontainebleau', 'mecsek_mountains', 'ign_lot_et_garonne', 'inflight_refuelling', 'aircraft_carrier', 'luberon', 'alto_adige', 'franconia', 'danube_valley', 'cevennes', 'oxford_cambridge', 'alpi_italiane', 'rega_zh', 'samu31', 'rega_sg', 'monastir', 'guatemala', 'london_heathrow', 'cardiff', 'sydney', 'brussels_ils', 'ajaccio', 'toulouse', 'noumea', 'london_gatwick', 'perth', 'kota_kinabalu', 'montreal', 'funchal', 'nice', 'munich', 'vancouver', 'lisbon', 'liege_sprimont', 'kiruna', 'bornholm', 'kingston', 'brussels_vor', 'vienna', 'border_control', 'dreamliner_boeing', 'texas_longhorn', 'zero_gravity', 'qantas747', 'turkish_flag', 'airbus_tree', 'easter_rabbit', 'belevingsvlucht', 'anzac_day', 'thankyou', 'vasaloppet']
-    names=['munich']
+    # names=['munich']
     return [samples.__getattr__(x) for x in names]
 
 # needed for set_lat_lon_from_x_y below
@@ -22,11 +23,11 @@ projection_for_flight = {}
 # i.e., the data is less accurate and with fewer points than the one from get_ground_truth_data()
 # The flights in this list will have x, y coordinates set to suitable 2d projection of the lat/lon positions.
 # You can access these coordinates in the Flight.data attribute, which is a Pandas DataFrame.
-def get_radar_data():
+def get_radar_data(names):
     rng = default_rng()
     radar_error = 0.1 # in kilometers
     radar_altitude_error = 330 # in feet ( ~ 100 meters)
-    gt = get_ground_truth_data()
+    gt = get_ground_truth_data(names)
     radar_data = []
 
     for flight in gt:
@@ -51,8 +52,6 @@ def get_radar_data():
             print("ERROR: duplicate flight ids: %s" % (flightid))
         projection_for_flight[flight_radar.callsign + str(flight_radar.start)]=projection
         radar_data.append(flight_radar)
-        # print(flight_radar.data[['longitude', 'latitude']])
-
     return radar_data
 
 # returns the same flight with latitude and longitude changed to reflect the x, y positions in the data
@@ -72,10 +71,22 @@ def set_lat_lon_from_x_y(flight):
     flight.data["latitude"] = lats
     return flight
 
+#shows a scatter plot (kalman vs noise vs true)
+def show_kalman_plot(flight_original, flight_filtered):
+    plt.figure()
+    plt.title('Kalman filter flight tracking')
+    plt.scatter(x=flight_original.data[['latitude']].values, y=flight_original.data[['longitude']].values, color='r', alpha=0.8, label='unfiltered')
+    plt.scatter(x=flight_filtered.data[['latitude']].values, y=flight_filtered.data[['longitude']].values, color='g', alpha=0.8, label='filtered')
+    plt.scatter(x=flight_original.data[['latitude_true']].values, y=flight_original.data[['longitude_true']].values, color='gray', alpha=0.9, label='true')
+    plt.legend(loc='upper left')
+    #allows for non-blocking showing of window
+    plt.draw()
+    plt.pause(0.001)
+
 def kalman_filter(config_tuple, flight):
 
     if not config_tuple:
-        raise NotImplementedError("Config tuple is not initialized, maybe 3 dimensions missing?")
+        raise NotImplementedError("Config tuple is not initialized, maybe 3 dimensions implementation is missing?")
 
     kf = KalmanFilter(
     transition_matrices=config_tuple[0],
@@ -95,8 +106,7 @@ def kalman_filter(config_tuple, flight):
 
     return res
 
-
-#returns a tuple with the configurations
+#returns a tuple with the initial configurations of the Kalman Filter
 def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
     if dim == 2:
         trans_matrix = [[1, 0, delta_t, 0],
@@ -106,9 +116,9 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
 
         # Observation matrix H
         obs_matrix = [[1, 0, 0, 0],
-                              [0, 1, 0, 0]]
+                      [0, 1, 0, 0]]
 
-        #Mine
+        #opt 1
         #TODO which one is correct
         trans_cov = [
                     [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
@@ -117,7 +127,7 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
                     [0, 0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2)]
                     ]
         
-        #Paul
+        #opt 2
         # trans_cov = [
         #             [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
         #             [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
@@ -125,7 +135,9 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         #             [0, 0, 0, (delta_t**2)*(sigma_p**2)]
         #             ]
         
-        trans_cov = np.eye(4)
+        #TODO test with this
+        # trans_cov = np.eye(4)
+
         obs_cov = np.eye(2)*sigma_o**2
 
         #TODO change init velocities
@@ -136,59 +148,62 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         return (trans_matrix, obs_matrix, trans_cov, obs_cov, init_st_mean, init_st_cov)
     else: return None #TODO 3 dimensions
 
+############## Main ################
 if __name__ == "__main__":
+    #names=['liguria', 'pixair_toulouse', 'indiana', 'texas', 'georeal_fyn_island', 'ign_mercantour', 'ign_fontainebleau', 'mecsek_mountains', 'ign_lot_et_garonne', 'inflight_refuelling', 'aircraft_carrier', 'luberon', 'alto_adige', 'franconia', 'danube_valley', 'cevennes', 'oxford_cambridge', 'alpi_italiane', 'rega_zh', 'samu31', 'rega_sg', 'monastir', 'guatemala', 'london_heathrow', 'cardiff', 'sydney', 'brussels_ils', 'ajaccio', 'toulouse', 'noumea', 'london_gatwick', 'perth', 'kota_kinabalu', 'montreal', 'funchal', 'nice', 'munich', 'vancouver', 'lisbon', 'liege_sprimont', 'kiruna', 'bornholm', 'kingston', 'brussels_vor', 'vienna', 'border_control', 'dreamliner_boeing', 'texas_longhorn', 'zero_gravity', 'qantas747', 'turkish_flag', 'airbus_tree', 'easter_rabbit', 'belevingsvlucht', 'anzac_day', 'thankyou', 'vasaloppet']
+    names = ['indiana']
 
-    radar_data = get_radar_data()
+    radar_data = get_radar_data(names)
 
-    #create a copy for the calman filter
+    #create a copy for the kalman filter
+    #TODO change this to unhardcode the one flight we are getting
     flight_original = radar_data[0]
     flight_filtered = copy.deepcopy(radar_data[0])
-    
-    config = init_kalman(flight_filtered.data)
+
+    #TODO run with 3 dims when done (Bonus points) 
+    config = init_kalman(flight_filtered.data, dim=2)
     res = kalman_filter(config, flight_filtered.data)
 
-    # plt.figure()
-    lines_true = plt.scatter(x = flight_original.data[['latitude_true']].values, y= flight_original.data[['longitude_true']].values, color='b')
-    lines_meas = plt.scatter(x = flight_original.data[['latitude']].values, y= flight_original.data[['longitude']].values, color='red')
-    
-    #write filtered data to flights
+    #save filtered data
     flight_filtered.data['x'] = res[0]
     flight_filtered.data['y'] = res[1]
     #convert back the x and y to coordinates
-    filtered_flight = set_lat_lon_from_x_y(flight_filtered)
-    
-    lines_filtered = plt.scatter(x = filtered_flight.data[['latitude']].values, y= filtered_flight.data[['longitude']].values, color='green')
-    #plt.show()
+    flight_filtered = set_lat_lon_from_x_y(flight_filtered)
+
+    show_kalman_plot(flight_original, flight_filtered)
     
     mse_noise = ((flight_original.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_original.data[['longitude']].values - flight_original.data[['longitude_true']].values)**2).mean()
-    mse_filtered = ((filtered_flight.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (filtered_flight.data[['longitude']].values - flight_original.data[['longitude']].values)**2).mean()
+    mse_filtered = ((flight_filtered.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_filtered.data[['longitude']].values - flight_original.data[['longitude']].values)**2).mean()
 
-    
-    #write the position data in a seperate dataframe
-    data = [flight_original.data[['latitude_true']], flight_original.data[['longitude_true']], flight_original.data[['latitude']].rename(columns={'latitude': 'latitude_noise'}), flight_original.data[['longitude']].rename(columns={'longitude': 'longitude_noise'}), filtered_flight.data[['latitude']].rename(columns={'latitude': 'latitude_filtered'}), filtered_flight.data[['longitude']].rename(columns={'longitude': 'longitude_filtered'})]
+    #write the position data in a separate dataframe
+    data = [
+        flight_original.data[['latitude_true']], 
+        flight_original.data[['longitude_true']], 
+        flight_original.data[['latitude']].rename(columns={'latitude': 'latitude_noise'}), 
+        flight_original.data[['longitude']].rename(columns={'longitude': 'longitude_noise'}), 
+        flight_filtered.data[['latitude']].rename(columns={'latitude': 'latitude_filtered'}), 
+        flight_filtered.data[['longitude']].rename(columns={'longitude': 'longitude_filtered'})
+        ]
     position_df = pd.concat(data, axis=1)
+
 
     #add the distances to the data frame    
     position_df['distance_filtered_true'] = np.nan
     position_df['distance_noise_true'] = np.nan
-    # #for ind in df.index:
-    # #print(df['Name'][ind], df['Stream'][ind])
 
     for i in position_df.index:
-        position_df['distance_noise_true'][i] =   distance.distance((position_df['latitude_true'][i],position_df['longitude_true'][i]),(position_df['latitude_noise'][i],position_df['longitude_noise'][i])).m
+        #distance betweeen noised data and the real data
+        position_df['distance_noise_true'][i] = distance.distance((position_df['latitude_true'][i], position_df['longitude_true'][i]), (position_df['latitude_noise'][i], position_df['longitude_noise'][i])).m
+        #distance between the filtered data and the real data
         position_df['distance_filtered_true'][i] = distance.distance((position_df['latitude_true'][i],position_df['longitude_true'][i]),(position_df['latitude_filtered'][i],position_df['longitude_filtered'][i])).m
     
-    print('----------------------------------------')
-    print('unfiltered')
-    print(position_df['distance_noise_true'].max())
-    print(position_df['distance_noise_true'].mean())
+    print('----------------------------------------------------')
+    print('Unfiltered:')
+    print(f"\t> Maxi Noised-true distance = {position_df['distance_noise_true'].max()} metres \n\t> Noised-true distance mean = {position_df['distance_noise_true'].mean()} metres")
 
+    print('----------------------------------------------------')
+    print('Filtered')
+    print(f"\t> Maxi Filtered-true distance = {position_df['distance_filtered_true'].max()} metres\n\t> Filtered-true distance mean = {position_df['distance_filtered_true'].mean()} metres")
 
-    print('----------------------------------------')
-    print('filtered')
-    print(position_df['distance_filtered_true'].max())
-    print(position_df['distance_filtered_true'].mean())
-
-
-    print('----------------------------------------')
-    print((mse_noise-mse_filtered)/mse_noise)
+    print('----------------------------------------------------')
+    print(f"\t> MSE for noised and filtered data = {(mse_noise-mse_filtered)/mse_noise}")
