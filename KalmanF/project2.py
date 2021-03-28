@@ -1,3 +1,4 @@
+from traffic.core import flight
 from traffic.data import samples
 from geopy import distance
 from geopy.distance import geodesic
@@ -8,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 import copy
+import sys
 
 # returns a list of flights with the original GPS data
 def get_ground_truth_data(names):
@@ -72,16 +74,36 @@ def set_lat_lon_from_x_y(flight):
     return flight
 
 #shows a scatter plot (kalman vs noise vs true)
-def show_kalman_plot(flight_original, flight_filtered):
+def show_kalman_plot(flight_original, flight_filtered, flight_smoothed):
     plt.figure()
     plt.title('Kalman filter flight tracking')
     plt.scatter(x=flight_original.data[['latitude']].values, y=flight_original.data[['longitude']].values, color='r', alpha=0.8, label='unfiltered')
     plt.scatter(x=flight_filtered.data[['latitude']].values, y=flight_filtered.data[['longitude']].values, color='g', alpha=0.8, label='filtered')
+    plt.scatter(x=flight_smoothed.data[['latitude']].values, y=flight_smoothed.data[['longitude']].values, color='violet', alpha=0.8, label='smoothed')
     plt.scatter(x=flight_original.data[['latitude_true']].values, y=flight_original.data[['longitude_true']].values, color='gray', alpha=0.9, label='true')
     plt.legend(loc='upper left')
     #allows for non-blocking showing of window
     plt.draw()
     plt.pause(0.001)
+
+def kalman_smooth(config_tuple, flight):
+    kf = KalmanFilter(
+    transition_matrices=config_tuple[0],
+    observation_matrices=config_tuple[1],
+    transition_covariance=config_tuple[2],
+    observation_covariance=config_tuple[3],
+    initial_state_mean=config_tuple[4],
+    initial_state_covariance=config_tuple[5]
+    )
+
+    state_means = kf.smooth(flight[['x', 'y']].values)[0]
+
+    res = [ [ i for i, j, k, l in state_means ], 
+            [ j for i, j, k, l in state_means ],
+            [ k for i, j, k, l in state_means ],
+            [ l for i, j, k, l in state_means ]]
+
+    return res
 
 def kalman_filter(config_tuple, flight):
 
@@ -118,8 +140,8 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         obs_matrix = [[1, 0, 0, 0],
                       [0, 1, 0, 0]]
 
-        #opt 1
         #TODO which one is correct
+        #opt 1
         trans_cov = [
                     [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
                     [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
@@ -134,9 +156,6 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         #             [0, 0, (delta_t**2)*(sigma_p**2), 0],
         #             [0, 0, 0, (delta_t**2)*(sigma_p**2)]
         #             ]
-        
-        #TODO test with this
-        # trans_cov = np.eye(4)
 
         obs_cov = np.eye(2)*sigma_o**2
 
@@ -151,8 +170,8 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
 ############## Main ################
 if __name__ == "__main__":
     #names=['liguria', 'pixair_toulouse', 'indiana', 'texas', 'georeal_fyn_island', 'ign_mercantour', 'ign_fontainebleau', 'mecsek_mountains', 'ign_lot_et_garonne', 'inflight_refuelling', 'aircraft_carrier', 'luberon', 'alto_adige', 'franconia', 'danube_valley', 'cevennes', 'oxford_cambridge', 'alpi_italiane', 'rega_zh', 'samu31', 'rega_sg', 'monastir', 'guatemala', 'london_heathrow', 'cardiff', 'sydney', 'brussels_ils', 'ajaccio', 'toulouse', 'noumea', 'london_gatwick', 'perth', 'kota_kinabalu', 'montreal', 'funchal', 'nice', 'munich', 'vancouver', 'lisbon', 'liege_sprimont', 'kiruna', 'bornholm', 'kingston', 'brussels_vor', 'vienna', 'border_control', 'dreamliner_boeing', 'texas_longhorn', 'zero_gravity', 'qantas747', 'turkish_flag', 'airbus_tree', 'easter_rabbit', 'belevingsvlucht', 'anzac_day', 'thankyou', 'vasaloppet']
-    names = ['mecsek_mountains']
-
+    #names = ['mecsek_mountains']
+    names = [str(sys.argv[1])]
     tot_maxi_mean_noised = 0
     tot_mean_mean_noised = 0
 
@@ -162,24 +181,30 @@ if __name__ == "__main__":
     radar_data = get_radar_data(names)
 
     #create a copy for the kalman filter
-    #TODO change this to unhardcode the one flight we are getting
     # for i in range(len(names)):
 
     flight_original = radar_data[0]
     flight_filtered = copy.deepcopy(radar_data[0])
+    flight_smoothed = copy.deepcopy(radar_data[0])
 
     #TODO run with 3 dims when done (Bonus points) 
-    config = init_kalman(flight_filtered.data, dim=2)
-    res = kalman_filter(config, flight_filtered.data)
 
-    #save filtered data
+    config = init_kalman(flight_filtered.data, dim=2, sigma_o=80, sigma_p=1.5)
+    res = kalman_filter(config, flight_filtered.data)
+    res_smoothed = kalman_smooth(config, flight_smoothed.data)
+
+    #save filtered and smoothed data
     flight_filtered.data['x'] = res[0] #x
     flight_filtered.data['y'] = res[1] #y
+
+    flight_smoothed.data['x'] = res_smoothed[0]
+    flight_smoothed.data['y'] = res_smoothed[1]
     #no velocity components ?
     #convert back the x and y to coordinates
     flight_filtered = set_lat_lon_from_x_y(flight_filtered)
+    flight_smoothed = set_lat_lon_from_x_y(flight_smoothed)
 
-    show_kalman_plot(flight_original, flight_filtered)
+    show_kalman_plot(flight_original, flight_filtered, flight_smoothed)
     
     mse_noise = ((flight_original.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_original.data[['longitude']].values - flight_original.data[['longitude_true']].values)**2).mean()
     mse_filtered = ((flight_filtered.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_filtered.data[['longitude']].values - flight_original.data[['longitude']].values)**2).mean()
@@ -191,23 +216,28 @@ if __name__ == "__main__":
         flight_original.data[['latitude']].rename(columns={'latitude': 'latitude_noised'}), 
         flight_original.data[['longitude']].rename(columns={'longitude': 'longitude_noised'}), 
         flight_filtered.data[['latitude']].rename(columns={'latitude': 'latitude_filtered'}), 
-        flight_filtered.data[['longitude']].rename(columns={'longitude': 'longitude_filtered'})
+        flight_filtered.data[['longitude']].rename(columns={'longitude': 'longitude_filtered'}),
+        flight_smoothed.data[['latitude']].rename(columns={'latitude':'latitude_smoothed'}),
+        flight_smoothed.data[['longitude']].rename(columns={'longitude':'longitude_smoothed'})
         ]
     position_df = pd.concat(tmp_data, axis=1)
 
     position_df['distance_filtered_true'] = np.nan
     position_df['distance_noised_true'] = np.nan
+    position_df['distance_smoothed_true'] = np.nan
 
     for i in position_df.index:
         #distance betweeen noised data and the real data
         position_df['distance_noised_true'][i] = distance.distance((position_df['latitude_true'][i], position_df['longitude_true'][i]), (position_df['latitude_noised'][i], position_df['longitude_noised'][i])).m
         #distance between the filtered data and the real data
         position_df['distance_filtered_true'][i] = distance.distance((position_df['latitude_true'][i],position_df['longitude_true'][i]),(position_df['latitude_filtered'][i],position_df['longitude_filtered'][i])).m
+
+        position_df['distance_smoothed_true'][i] = distance.distance((position_df['latitude_true'][i],position_df['longitude_true'][i]),(position_df['latitude_smoothed'][i],position_df['longitude_smoothed'][i])).m
     # tot_maxi_mean_noised += position_df['distance_noised_true'].max()
     # tot_mean_mean_noised += position_df['distance_noised_true'].mean()
     # tot_maxi_mean_filtered += position_df['distance_filtered_true'].max()
     # tot_mean_mean_filtered += position_df['distance_filtered_true'].mean()
-    print(f"######################### FLIGHT {names[0]} ################")
+    print(f"FLIGHT {names[0]}:")
     print('----------------------------------------------------')
     print('Unfiltered:')
     print(f"\t> Maxi Noised-true distance = {position_df['distance_noised_true'].max()} metres \n\t> Noised-true distance mean = {position_df['distance_noised_true'].mean()} metres")
@@ -217,16 +247,7 @@ if __name__ == "__main__":
     print(f"\t> Maxi Filtered-true distance = {position_df['distance_filtered_true'].max()} metres\n\t> Filtered-true distance mean = {position_df['distance_filtered_true'].mean()} metres")
 
     print('----------------------------------------------------')
+    print('Smoothed')
+    print(f"\t> Maxi smooth-true distance = {position_df['distance_smoothed_true'].max()} metres\n\t> smoothed-true distance mean = {position_df['distance_smoothed_true'].mean()} metres")
+    print('----------------------------------------------------')
     print(f"\t> MSE for noised and filtered data = {(mse_noise-mse_filtered)/mse_noise}")
-
-
-
-
-    # print("Results:\n")
-    # print("--------")
-    # print("Unfiltered")
-    # print(f"\t> Maximum distance mean = {tot_maxi_mean_noised/len(names)}\n\t> Mean Distance Mean = {tot_mean_mean_noised/len(names)}")
-    # print("--------")
-    # print("Filtered")
-    # print(f"\t> Maximum distance mean = {tot_maxi_mean_filtered/len(names)}\n\t> Mean distance mean = {tot_mean_mean_filtered/len(names)}")
-        

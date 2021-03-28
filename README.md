@@ -222,7 +222,7 @@ These variables are the means of the noisy flight measurements and the means of 
 
 According to the following tests with all 57 flights:
 
-```sh
+```
 Results:
 
 --------
@@ -289,15 +289,212 @@ Filtered
 
 ### Task 8 - Process noises ($\sigma_p, \sigma_o$)
 
-We conducted the following experiments:
+We conducted the following experiments on the same flight ('Indiana'):
 
-TODO experiments here
+The default configuration is $\sigma_p =1.5$ and $\sigma_o = 50$
+
+Which gives the following results:
+
+```
+sigma_p =  1.5
+sigma_o =  50
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 376.82793983004245 metres 
+	> Noised-true distance mean = 80.56738272509013 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 335.75696066019503 metres
+	> Filtered-true distance mean = 78.7284937840794 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.6166429105655521
+```
+
+***
+
+**Increasing $\boldsymbol{\sigma_p}$**
+
+$\sigma_p = 2.0$ and $\sigma_o = 50$
+
+```
+sigma_p =  2.0
+sigma_o =  50
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 338.20584164354534 metres 
+	> Noised-true distance mean = 80.80297335804069 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 338.72554024965797 metres
+	> Filtered-true distance mean = 78.78773494180938 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.6513884407566987
+```
+
+$\sigma_p=6.0$ and $\sigma_o = 50$
+
+```
+sigma_p =  6.0
+sigma_o =  50
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 311.99729382364444 metres 
+	> Noised-true distance mean = 80.4167053596705 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 310.6907469168941 metres
+	> Filtered-true distance mean = 79.92384829128612 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.6291971794758533
+```
+
+**Increasing  $\boldsymbol{\sigma_o}$**
+
+```
+sigma_p =  1.5
+sigma_o =  90
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 352.4406998448271 metres 
+	> Noised-true distance mean = 79.21159442589702 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 331.21397474517596 metres
+	> Filtered-true distance mean = 82.57125345394844 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.46013448937142043
+```
+
+**Decreasing $\boldsymbol{\sigma_p}$**
+
+```
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 351.4009912834685 metres 
+	> Noised-true distance mean = 79.75724551207101 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 476.3773855865731 metres
+	> Filtered-true distance mean = 97.87133152892245 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = -0.14840329772963845
+```
+
+**Decreasing $\boldsymbol{\sigma_o}$**
+
+```
+sigma_p =  1.5
+sigma_o =  25
+FLIGHT indiana
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 335.3872146187951 metres 
+	> Noised-true distance mean = 80.27833389461362 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 323.24886105648085 metres
+	> Filtered-true distance mean = 78.71728188981585 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.6460506784266561
+```
+
+
+
+After all of these observations, we have estimated that the best configuration for $\sigma_p$ and $\sigma_o$ is to have a little bit higher $\sigma_p$, since most of the observations are off by ~80m, so to compensate, the standard deviation from observations has to be around that value.
+$$
+\sigma_p = 80\\
+\sigma_o = 1.5
+$$
+
 
 ### Task 9 - Smoothing
 
+After applying smoothing to a few flights we got the following results:
+
+Texas:
+
+![texas](./fig/texas.png)
+
+```
+FLIGHT texas:
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 348.0096414277998 metres 
+	> Noised-true distance mean = 79.78908051994826 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 343.7114645367926 metres
+	> Filtered-true distance mean = 81.21988065270278 metres
+----------------------------------------------------
+Smoothed
+	> Maxi smooth-true distance = 381.2439369164914 metres
+	> smoothed-true distance mean = 72.56639291860719 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.47826039652742763
+```
+
+
+
+Munich
+
+![munich](./fig/munich.png)
+
+
+
+```
+FLIGHT munich:
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 384.4273100913222 metres 
+	> Noised-true distance mean = 82.3261516127999 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 322.6340576967334 metres
+	> Filtered-true distance mean = 84.09167021786106 metres
+----------------------------------------------------
+Smoothed
+	> Maxi smooth-true distance = 298.0388787434447 metres
+	> smoothed-true distance mean = 77.93099438515232 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.5355278359118376
+```
+
+Pixair Toulouse
+
+![toulouse](./fig/toulouse.png)
+
+```
+FLIGHT pixair_toulouse:
+----------------------------------------------------
+Unfiltered:
+	> Maxi Noised-true distance = 379.84789518501003 metres 
+	> Noised-true distance mean = 79.4546558859413 metres
+----------------------------------------------------
+Filtered
+	> Maxi Filtered-true distance = 351.99340681784867 metres
+	> Filtered-true distance mean = 83.82174216882619 metres
+----------------------------------------------------
+Smoothed
+	> Maxi smooth-true distance = 319.4323489940619 metres
+	> smoothed-true distance mean = 88.78345695131203 metres
+----------------------------------------------------
+	> MSE for noised and filtered data = 0.4634306102974502
+```
+
+We can definitely start to see a pattern. It seems that the smoothing method is preferred over the Kalman Filter when the flights are a lot more complicated. By complicated we mean that there are a lot of turns and not many parts where the flight is going straight.
+
+However, when the flight is simple, like the case of Texas, where there are a lot of parts where the plane is flying straight, the smoothing method seems to have lots of errors.
+
+In conclusion, Smoothing is best when the flight pattern is complex.
+
 ### Task 10 - Bonus (3D)
 
-### Setting up the environment (Linux/MacOS)
+### Setting up the environment
 
 `conda create --prefix kalman-env cartopy shapely python=3.7`
 
@@ -325,5 +522,5 @@ We ran all of the tests and the code on the IPython environment (run the followi
 
 and once inside the IPython environment:
 
-`run project2.py`
+`run project2.py [flight_name]` e.g. `indiana` or `munich`
 
