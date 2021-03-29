@@ -67,7 +67,7 @@ V(x) & 0 & COV(x,\dot{x}) & 0\\
 COV(\dot{x},x) & 0 & V(\dot{x}) & 0\\
 0 & COV(\dot{y},y) & 0 & V(\dot{y})
 \end{pmatrix}\\
-&= \sigma_a^2
+&= \sigma_p^2
 \begin{pmatrix}
 \frac{\Delta t^4}{4} & 0 & \frac{\Delta t^3}{2} & 0\\
 0 & \frac{\Delta t^4}{4} & 0 & \frac{\Delta t^3}{2}\\
@@ -153,12 +153,21 @@ Reference: [State Update (Kalman Filter tutorial)](https://www.kalmanfilter.net/
 
 The covariance matrix $R$ can be defined as a $2\times 2$ diagonal matrix:
 $$
-R = 
+\begin{align}
+R &= \sigma_p^2
 \begin{pmatrix}
-1 & 0\\
-0 & 1
+V(x) & 0\\
+0 & V(y)
+\end{pmatrix}\\
+&= \sigma_p^2
+\begin{pmatrix}
+\frac{\Delta t^4}{4} & 0\\
+0 & \frac{\Delta t^4}{4}
 \end{pmatrix}
+\end{align}
 $$
+
+
 
 ### Task 2 - Understanding the `traffic` data structure
 

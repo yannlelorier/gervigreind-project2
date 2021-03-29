@@ -131,6 +131,7 @@ def kalman_filter(config_tuple, flight):
 #returns a tuple with the initial configurations of the Kalman Filter
 def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
     if dim == 2:
+        #F
         trans_matrix = [[1, 0, delta_t, 0],
                         [0, 1, 0, delta_t],
                         [0, 0, 1, 0],
@@ -139,25 +140,18 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         # Observation matrix H
         obs_matrix = [[1, 0, 0, 0],
                       [0, 1, 0, 0]]
-
-        #TODO which one is correct
-        #opt 1
+        #Q
         trans_cov = [
                     [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
                     [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
-                    [0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2), 0],
-                    [0, 0.5*delta_t**3, 0, (delta_t**2)*(sigma_p**2)]
+                    [(0.5*delta_t**3)*(sigma_p**2), 0, (delta_t**2)*(sigma_p**2), 0],
+                    [0, (0.5*delta_t**3)*(sigma_p**2), 0, (delta_t**2)*(sigma_p**2)]
                     ]
-        
-        #opt 2
-        # trans_cov = [
-        #             [0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2), 0],
-        #             [0, 0.25*(delta_t**4)*(sigma_p**2), 0, 0.5*(delta_t**3)*(sigma_p**2)],
-        #             [0, 0, (delta_t**2)*(sigma_p**2), 0],
-        #             [0, 0, 0, (delta_t**2)*(sigma_p**2)]
-        #             ]
-
-        obs_cov = np.eye(2)*sigma_o**2
+        #R
+        obs_cov = [
+                   [(0.25*delta_t**4)*(sigma_p**2), 0],
+                   [0, (0.25*delta_t**4)*(sigma_p**2)]
+                  ]
 
         #TODO change init velocities
         init_st_mean = [flight['x'].values[0], flight['y'].values[0], 0, 0]
@@ -165,7 +159,7 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
         init_st_cov = np.eye(4)*sigma_o**2
 
         return (trans_matrix, obs_matrix, trans_cov, obs_cov, init_st_mean, init_st_cov)
-    else: return None #TODO 3 dimensions
+    else: return None #TODO 3 dimensions (bonus)
 
 ############## Main ################
 if __name__ == "__main__":
@@ -187,7 +181,6 @@ if __name__ == "__main__":
     flight_filtered = copy.deepcopy(radar_data[0])
     flight_smoothed = copy.deepcopy(radar_data[0])
 
-    #TODO run with 3 dims when done (Bonus points) 
 
     config = init_kalman(flight_filtered.data, dim=2, sigma_o=80, sigma_p=1.5)
     res = kalman_filter(config, flight_filtered.data)
