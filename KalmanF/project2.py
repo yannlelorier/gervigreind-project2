@@ -98,10 +98,10 @@ def kalman_smooth(config_tuple, flight):
 
     state_means = kf.smooth(flight[['x', 'y']].values)[0]
 
-    res = [ [ i for i, j, k, l in state_means ], 
-            [ j for i, j, k, l in state_means ],
-            [ k for i, j, k, l in state_means ],
-            [ l for i, j, k, l in state_means ]]
+    res = [ [ i for i, _, _, _ in state_means ], 
+            [ j for _, j, _, _ in state_means ],
+            [ k for _, _, k, _ in state_means ],
+            [ l for _, _, _, l in state_means ]]
 
     return res
 
@@ -121,10 +121,10 @@ def kalman_filter(config_tuple, flight):
 
     state_means  = kf.filter(flight[['x', 'y']].values)[0]
 
-    res = [ [ i for i, j, k, l in state_means ], 
-            [ j for i, j, k, l in state_means ],
-            [ k for i, j, k, l in state_means ],
-            [ l for i, j, k, l in state_means ]]
+    res = [ [ i for i, _, _, _ in state_means ], 
+            [ j for _, j, _, _ in state_means ],
+            [ k for _, _, k, _ in state_means ],
+            [ l for _, _, _, l in state_means ]]
 
     return res
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     flight_smoothed = copy.deepcopy(radar_data[0])
 
 
-    config = init_kalman(flight_filtered.data, dim=2, sigma_o=80, sigma_p=1.5)
+    config = init_kalman(flight_filtered.data, dim=2, sigma_o=50, sigma_p=1.5)
     res = kalman_filter(config, flight_filtered.data)
     res_smoothed = kalman_smooth(config, flight_smoothed.data)
 
@@ -199,9 +199,9 @@ if __name__ == "__main__":
 
     show_kalman_plot(flight_original, flight_filtered, flight_smoothed)
     
-    mse_noise = ((flight_original.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_original.data[['longitude']].values - flight_original.data[['longitude_true']].values)**2).mean()
+    mse_noised = ((flight_original.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_original.data[['longitude']].values - flight_original.data[['longitude_true']].values)**2).mean()
     mse_filtered = ((flight_filtered.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_filtered.data[['longitude']].values - flight_original.data[['longitude']].values)**2).mean()
-
+    mse_smoothed = ((flight_smoothed.data[['latitude']].values - flight_original.data[['latitude_true']].values)**2 + (flight_smoothed.data[['longitude']].values - flight_original.data[['longitude']].values)**2).mean()
     #write the position data in a separate dataframe
     tmp_data = [
         flight_original.data[['latitude_true']], 
@@ -243,4 +243,6 @@ if __name__ == "__main__":
     print('Smoothed')
     print(f"\t> Maxi smooth-true distance = {position_df['distance_smoothed_true'].max()} metres\n\t> smoothed-true distance mean = {position_df['distance_smoothed_true'].mean()} metres")
     print('----------------------------------------------------')
-    print(f"\t> MSE for noised and filtered data = {(mse_noise-mse_filtered)/mse_noise}")
+    print(f"\t> MSE for noised and filtered data = {(mse_noised-mse_filtered)/mse_noised}")
+    print('----------------------------------------------------')
+    print(f"\t> MSE for smoothed and filtered data = {(mse_noised-mse_smoothed)/mse_noised}")
