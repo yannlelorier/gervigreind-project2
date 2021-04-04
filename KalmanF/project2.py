@@ -163,14 +163,13 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
 
 ############## Main ################
 if __name__ == "__main__":
-    #names=['liguria', 'pixair_toulouse', 'indiana', 'texas', 'georeal_fyn_island', 'ign_mercantour', 'ign_fontainebleau', 'mecsek_mountains', 'ign_lot_et_garonne', 'inflight_refuelling', 'aircraft_carrier', 'luberon', 'alto_adige', 'franconia', 'danube_valley', 'cevennes', 'oxford_cambridge', 'alpi_italiane', 'rega_zh', 'samu31', 'rega_sg', 'monastir', 'guatemala', 'london_heathrow', 'cardiff', 'sydney', 'brussels_ils', 'ajaccio', 'toulouse', 'noumea', 'london_gatwick', 'perth', 'kota_kinabalu', 'montreal', 'funchal', 'nice', 'munich', 'vancouver', 'lisbon', 'liege_sprimont', 'kiruna', 'bornholm', 'kingston', 'brussels_vor', 'vienna', 'border_control', 'dreamliner_boeing', 'texas_longhorn', 'zero_gravity', 'qantas747', 'turkish_flag', 'airbus_tree', 'easter_rabbit', 'belevingsvlucht', 'anzac_day', 'thankyou', 'vasaloppet']
-    #names = ['mecsek_mountains']
+    # names=['liguria', 'pixair_toulouse', 'indiana', 'texas', 'georeal_fyn_island', 'ign_mercantour', 'ign_fontainebleau', 'mecsek_mountains', 'ign_lot_et_garonne', 'inflight_refuelling', 'aircraft_carrier', 'luberon', 'alto_adige', 'franconia', 'danube_valley', 'cevennes', 'oxford_cambridge', 'alpi_italiane', 'rega_zh', 'samu31', 'rega_sg', 'monastir', 'guatemala', 'london_heathrow', 'cardiff', 'sydney', 'brussels_ils', 'ajaccio', 'toulouse', 'noumea', 'london_gatwick', 'perth', 'kota_kinabalu', 'montreal', 'funchal', 'nice', 'munich', 'vancouver', 'lisbon', 'liege_sprimont', 'kiruna', 'bornholm', 'kingston', 'brussels_vor', 'vienna', 'border_control', 'dreamliner_boeing', 'texas_longhorn', 'zero_gravity', 'qantas747', 'turkish_flag', 'airbus_tree', 'easter_rabbit', 'belevingsvlucht', 'anzac_day', 'thankyou', 'vasaloppet']
     names = [str(sys.argv[1])]
-    tot_maxi_mean_noised = 0
-    tot_mean_mean_noised = 0
+    # tot_maxi_mean_noised = 0
+    # tot_mean_mean_noised = 0
 
-    tot_maxi_mean_filtered = 0
-    tot_mean_mean_filtered = 0
+    # tot_maxi_mean_filtered = 0
+    # tot_mean_mean_filtered = 0
 
     radar_data = get_radar_data(names)
 
@@ -182,7 +181,7 @@ if __name__ == "__main__":
     flight_smoothed = copy.deepcopy(radar_data[0])
 
 
-    config = init_kalman(flight_filtered.data, dim=2, sigma_o=50, sigma_p=1.5)
+    config = init_kalman(flight_filtered.data, dim=2, sigma_o=80, sigma_p=1.5)
     res = kalman_filter(config, flight_filtered.data)
     res_smoothed = kalman_smooth(config, flight_smoothed.data)
 
@@ -230,6 +229,7 @@ if __name__ == "__main__":
     # tot_mean_mean_noised += position_df['distance_noised_true'].mean()
     # tot_maxi_mean_filtered += position_df['distance_filtered_true'].max()
     # tot_mean_mean_filtered += position_df['distance_filtered_true'].mean()
+
     print(f"FLIGHT {names[0]}:")
     print('----------------------------------------------------')
     print('Unfiltered:')
@@ -246,3 +246,11 @@ if __name__ == "__main__":
     print(f"\t> MSE for noised and filtered data = {(mse_noised-mse_filtered)/mse_noised}")
     print('----------------------------------------------------')
     print(f"\t> MSE for smoothed and filtered data = {(mse_noised-mse_smoothed)/mse_noised}")
+    
+    # testing all flights
+    
+    # print("Results")
+    # print(f"tot_maxi_mean_noised\n\t>{tot_maxi_mean_noised/len(names)}")
+    # print(f"tot_mean_mean_noised\n\t>{tot_mean_mean_noised/len(names)}")
+    # print(f"tot_maxi_mean_filtered\n\t>{tot_maxi_mean_filtered/len(names)}")
+    # print(f"tot_mean_mean_filtered\n\t>{tot_mean_mean_filtered/len(names)}")
