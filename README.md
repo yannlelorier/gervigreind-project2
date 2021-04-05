@@ -188,18 +188,12 @@ According to the documentation of [Traffic core structure](https://traffic-viz.g
 
 **Plotting some examples from The Quickstart** 
 
-The script for this can be found [here](./KalmanF/test_plots.py)
+The script for this can be found [here](./KalmanF/task1.py)
 
-and can be run with the `IPython` Environment:
-
-```sh
-python -m IPython
-```
-
-Once inside the `IPython` environment, in the `KalmanF` directory:
+And assuming the environment has been set up correctly, and that we are inside the IPython environment:
 
 ```python
-run test_plots.py
+run task1.py
 ```
 
 
@@ -243,19 +237,19 @@ tot_mean_mean_filtered
 	>81.10277553435715
 ```
 
-this corresponds to a 15% improvement in performance for the Maximum distance mean
+> This corresponds to a 15% improvement in performance for the Maximum distance mean;
+>
+> and a 4.8% decrease in performance for the Mean Distance mean.
 
-And a 4.8% decrease in performance for the Mean Distance mean.
+The mean of the means of the distances between true-noised might not be an accurate measure for the tests, since the variance in distances can vary so much in every flight.
 
-The Mean of the means of the flights might not be an accurate measure for the tests, since the variance in distances can vary so much in every flight.
-
-However, 15% improvement in performance is quite significant when looking at the maximum distances, and is a more relevant measure when talking about the Kalman Filter.
+However, 15% improvement in performance is quite significant when looking at the maximum distances between true-noised, and is a more relevant measure when talking about the Kalman Filter.
 
 ***
 
 When running standalone tests we realized that:
 
-We can see that the flights where the model performs worse are the flights where there almost no turns, and the Kalman filter lags behind the actual trajectory of the plane, in contrast to flights with lots of turns where the Kalman filter shines.
+We can see that the flights where the model performs worse are the flights where there almost no turns and the Kalman filter lags behind the actual trajectory of the plane, in contrast to flights with lots of turns where the Kalman filter shines.
 
 Another case where this model lacks is when the flight is so long that the curvature of the Earth starts to interfere with the $x$ and $y$ coordinates.
 
@@ -558,9 +552,9 @@ Smoothed
 
 We can definitely start to see a pattern. It seems that the smoothing method is preferred over the Kalman Filter when the flights have less sharp turns. If the flight trajectory makes rounder, longer turns, then the smoothing method sometimes outperforms the Kalman Filter (sometimes, because of the random noisy data)
 
-However, when the flight is simple, like the case of Texas, where there are a lot of parts where the plane is flying straight, of there are sharp turns, the smoothing method seems to have lots of errors.
+However, when the flight trajectory has straight parts, like the case of Texas, and where there are also sharp turns at the end of each straight path, the smoothing method seems to have lots of errors.
 
-In conclusion, Smoothing is best when the flight pattern is simple, whereas the Kalman Filter is better suited for complex, sharp flight trajectories.
+In conclusion, Smoothing is best when the flight pattern is simple, whereas the Kalman Filter is better suited for complex, sharp-turned flight trajectories.
 
 ### Task 10 - Bonus (3D)
 
