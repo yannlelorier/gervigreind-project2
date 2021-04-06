@@ -153,7 +153,6 @@ def init_kalman(flight, delta_t=10, sigma_p=1.5, sigma_o=50, dim=2):
                    [0, (0.25*delta_t**4)*(sigma_p**2)]
                   ]
 
-        #TODO change init velocities
         init_st_mean = [flight['x'].values[0], flight['y'].values[0], 0, 0]
 
         init_st_cov = np.eye(4)*sigma_o**2

@@ -8,6 +8,8 @@ Wojciech Woźniak
 
 Yann Le Lorier
 
+Elias Friðberg Guðjhonsen
+
 [TOC]
 
 
@@ -51,7 +53,7 @@ B_ku_k= 0
 $$
 
 
-#### Covariance Matrix $Q$ (check)
+#### Covariance Matrix $Q$
 
 Reference: [Covariance (Kalman FIlter Tutorial)](https://www.kalmanfilter.net/covextrap.html)
 
@@ -251,7 +253,7 @@ When running standalone tests we realized that:
 
 We can see that the flights where the model performs worse are the flights where there almost no turns and the Kalman filter lags behind the actual trajectory of the plane, in contrast to flights with lots of turns where the Kalman filter shines.
 
-Another case where this model lacks is when the flight is so long that the curvature of the Earth starts to interfere with the $x$ and $y$ coordinates.
+Another case where this model could lack when the flight is so long that the curvature of the Earth starts to interfere with the $x$ and $y$ coordinates.
 
 Examples:
 
@@ -461,12 +463,12 @@ Smoothed
 
 
 
-After all of these observations, we have estimated that the best configuration for $\sigma_p$ and $\sigma_o$ is to have a higher $\sigma_p$, since the mean of the distances between the observations and true values is usually around ~80m. In order to compensate, the standard deviation from observations-true has to be around that value.
+After all of these observations, we have estimated that the best configuration for $\sigma_p$ and $\sigma_o$ is to have a higher $\sigma_o$, since the mean of the distances between the observations and true values is usually around ~80m. In order to compensate, the standard deviation from observations-true has to be around that value.
 
-For $\sigma_o$, the value can stay around 1.5, since we are assuming that the error from factors like the wind don't affect too much the acceleration.
+For $\sigma_p$, the value can stay around 1.5, since we are assuming that the error from factors like the wind don't affect too much the acceleration.
 $$
-\sigma_p = 80\\
-\sigma_o = 1.5
+\sigma_o = 80\\
+\sigma_p = 1.5
 $$
 
 
@@ -550,9 +552,9 @@ Smoothed
 	> MSE for smoothed and filtered data = -0.3957753653153553
 ```
 
-We can definitely start to see a pattern. It seems that the smoothing method is preferred over the Kalman Filter when the flights have less sharp turns. If the flight trajectory makes rounder, longer turns, then the smoothing method sometimes outperforms the Kalman Filter (sometimes, because of the random noisy data)
+We can definitely start to see a pattern. It seems that the smoothing method is preferred over the Kalman Filter when the flights have less sharp turns. If the flight trajectory makes rounder, longer turns, then the smoothing method sometimes outperforms the Kalman Filter (sometimes, because of the random noisy data).
 
-However, when the flight trajectory has straight parts, like the case of Texas, and where there are also sharp turns at the end of each straight path, the smoothing method seems to have lots of errors.
+However, when the flight trajectory has straight parts, like the case of the Texas flight, where there are also sharp turns at the end of each straight path, the smoothing method seems to have lots of errors.
 
 In conclusion, Smoothing is best when the flight pattern is simple, whereas the Kalman Filter is better suited for complex, sharp-turned flight trajectories.
 
